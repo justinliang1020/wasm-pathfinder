@@ -1,5 +1,7 @@
 #include <SDL2/SDL.h>
 #include <emscripten.h>
+#include <queue>
+#include <set>
 #include "canvas.h"
 #include "search.h"
 
@@ -23,6 +25,17 @@ int cur_tile = -1;
 
 //canvas
 canvas canv = canvas(MAP_WIDTH, MAP_HEIGHT);
+
+// helper function for debugging in javascript console
+EM_JS(void, take_args, (int x, int y), {
+    console.log('I received: ' + [ x, y ]);
+});
+
+void breadth_first_search()
+{
+    std::queue<int> q;
+    std::set<int> discovered;
+}
 
 void render()
 {
@@ -62,12 +75,15 @@ void get_input(SDL_Event e)
 {
     while (SDL_PollEvent(&e))
     {
-        int x = e.motion.x / TILE_WIDTH;
-        int y = e.motion.y / TILE_HEIGHT;
+        int mx, my;
+        SDL_GetMouseState(&mx, &my);
+        mx /= TILE_WIDTH;
+        my /= TILE_HEIGHT;
+
         switch (e.type)
         {
         case SDL_MOUSEBUTTONDOWN:
-            cur_tile = canv.at(x, y);
+            cur_tile = canv.at(mx, my);
             painting = true;
             break;
         case SDL_MOUSEBUTTONUP:
@@ -82,18 +98,26 @@ void get_input(SDL_Event e)
                 canv.clear();
                 render();
                 break;
+            case SDLK_w:
+                canv.set_start(mx, my);
+                render();
+                break;
+            case SDLK_e:
+                canv.set_end(mx, my);
+                render();
+                break;
             }
         }
-        if (painting && x > 0 && y > 0) //check if mouse isn't off window
+        if (painting && mx >= 0 && my >= 0) //check if mouse isn't off window
         {
             if (cur_tile == 1)
             {
-                canv.paint(x, y, 0);
+                canv.paint(mx, my, 0);
                 render();
             }
             else
             {
-                canv.paint(x, y, 1);
+                canv.paint(mx, my, 1);
                 render();
             }
         }
@@ -110,7 +134,7 @@ int main()
     SDL_Init(SDL_INIT_VIDEO);
     SDL_CreateWindowAndRenderer(SCREEN_WIDTH, SCREEN_HEIGHT, 0, &window, &renderer);
 
-    canv.set_default();
+    canv.set_default_points();
 
     render();
 

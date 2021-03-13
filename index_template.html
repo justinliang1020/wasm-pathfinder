@@ -8,7 +8,7 @@
     <link rel="stylesheet" href="index_template_style.css">
 </head>
 
-<body>
+<body style = "background-color:#2f4f4f">
     <!-- <hr/> -->
     <figure style="overflow:visible;" id="spinner">
         <div class="spinner"></div>
@@ -21,7 +21,6 @@
     <div class="emscripten_border">
         <canvas class="emscripten" id="canvas" oncontextmenu="event.preventDefault()" tabindex=-1></canvas>
     </div>
-    <hr />
     <!-- <div class="emscripten">
       <input type="checkbox" id="resize">Resize canvas
       <input type="checkbox" id="pointerLock" checked>Lock/hide mouse pointer
@@ -33,7 +32,7 @@
     <hr/>
     <textarea class="emscripten" id="output" rows="8"></textarea>
     <hr> -->
-    <p>sample text</p>
+    <p>Instructions: q - clear, w - set start, e - set end</p>
     <script type='text/javascript'>
         var statusElement = document.getElementById('status');
         var progressElement = document.getElementById('progress');

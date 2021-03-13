@@ -6,6 +6,7 @@ class canvas
 {
 public:
     canvas(int x, int y) : width(x), height(y), map(x * y) {}
+    canvas(int x, int y, int s, int f) : width(x), height(y), map(x * y), start(s), end(f) {}
 
     int at(int x, int y)
     {
@@ -20,18 +21,36 @@ public:
     void clear()
     {
         std::fill(map.begin(), map.end(), 0);
-        set_default();
+        set_default_points();
     }
 
-    void set_default()
+    void set_default_points()
     {
-        map[width / 4 + (height / 2) * width] = 2;   // set start to left middle
-        map[width * 3 / 4 + (height / 2) * width] = 3;   // set end to right middle
+        start = width / 4 + (height / 2) * width;   // set start to left middle
+        end = width * 3 / 4 + (height / 2) * width; // set end to right middle
+        map[start] = 2;
+        map[end] = 3;
+    }
+
+    void set_start(int x, int y)
+    {
+        map[start] = 0;
+        start = x + y * width;
+        paint(x, y, 2);
+    }
+
+    void set_end(int x, int y)
+    {
+        map[end] = 0;
+        end = x + y * width;
+        paint(x, y, 3);
     }
 
 public:
     int width;
     int height;
+    int start;
+    int end;
 
 private:
     std::vector<int> map;
