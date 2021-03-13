@@ -1,6 +1,7 @@
 #include <SDL2/SDL.h>
 #include <emscripten.h>
 #include "canvas.h"
+#include "search.h"
 
 SDL_Window *window;
 SDL_Renderer *renderer;
@@ -20,11 +21,12 @@ const int TILE_HEIGHT = SCREEN_HEIGHT / MAP_HEIGHT;
 bool painting = false;
 int cur_tile = -1;
 
+//canvas
 canvas canv = canvas(MAP_WIDTH, MAP_HEIGHT);
 
 void render()
 {
-    SDL_SetRenderDrawColor(renderer, 0x17, 0x2e, 0x1d, 255); //172e1d
+    SDL_SetRenderDrawColor(renderer, 211, 211, 211, 255); // light grey
     SDL_RenderClear(renderer);
 
     for (int y = 0; y < MAP_HEIGHT; ++y)
@@ -32,18 +34,24 @@ void render()
         for (int x = 0; x < MAP_WIDTH; ++x)
         {
             SDL_Rect tileRect = {x * TILE_WIDTH, y * TILE_HEIGHT, TILE_WIDTH, TILE_HEIGHT};
-            if (canv.at(x, y) == 1)
+            int tile = canv.at(x, y);
+            switch (canv.at(x, y))
             {
-                SDL_SetRenderDrawColor(renderer, 76, 72, 72, 255);
+            case 1:
+                SDL_SetRenderDrawColor(renderer, 128, 128, 128, 255); // grey wall
                 SDL_RenderFillRect(renderer, &tileRect);
-                SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
-                SDL_RenderDrawRect(renderer, &tileRect);
+                break;
+            case 2:
+                SDL_SetRenderDrawColor(renderer, 0, 255, 0, 255); // green start
+                SDL_RenderFillRect(renderer, &tileRect);
+                break;
+            case 3:
+                SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255); // red end
+                SDL_RenderFillRect(renderer, &tileRect);
+                break;
             }
-            else
-            {
-                SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
-                SDL_RenderDrawRect(renderer, &tileRect);
-            }
+            SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+            SDL_RenderDrawRect(renderer, &tileRect);
         }
     }
 
@@ -66,7 +74,17 @@ void get_input(SDL_Event e)
             painting = false;
             break;
         }
-        if (painting && x > 0 && y > 0)   //check if mouse isn't off window
+        if (e.type == SDL_KEYDOWN)
+        {
+            switch (e.key.keysym.sym)
+            {
+            case SDLK_q:
+                canv.clear();
+                render();
+                break;
+            }
+        }
+        if (painting && x > 0 && y > 0) //check if mouse isn't off window
         {
             if (cur_tile == 1)
             {
@@ -91,6 +109,8 @@ int main()
 {
     SDL_Init(SDL_INIT_VIDEO);
     SDL_CreateWindowAndRenderer(SCREEN_WIDTH, SCREEN_HEIGHT, 0, &window, &renderer);
+
+    canv.set_default();
 
     render();
 
