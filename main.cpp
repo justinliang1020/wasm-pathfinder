@@ -1,6 +1,6 @@
 #include <SDL2/SDL.h>
 #include <emscripten.h>
-#include <cmath>
+#include "canvas.h"
 
 SDL_Window *window;
 SDL_Renderer *renderer;
@@ -20,7 +20,7 @@ const int TILE_HEIGHT = SCREEN_HEIGHT / MAP_HEIGHT;
 bool painting = false;
 int cur_tile = -1;
 
-int map[MAP_HEIGHT][MAP_WIDTH] = {};
+canvas canv = canvas(MAP_WIDTH, MAP_HEIGHT);
 
 void render()
 {
@@ -32,7 +32,7 @@ void render()
         for (int x = 0; x < MAP_WIDTH; ++x)
         {
             SDL_Rect tileRect = {x * TILE_WIDTH, y * TILE_HEIGHT, TILE_WIDTH, TILE_HEIGHT};
-            if (map[y][x] == 1)
+            if (canv.at(x, y) == 1)
             {
                 SDL_SetRenderDrawColor(renderer, 76, 72, 72, 255);
                 SDL_RenderFillRect(renderer, &tileRect);
@@ -50,35 +50,34 @@ void render()
     SDL_RenderPresent(renderer);
 }
 
-void paint_tile(int x, int y, int color)
-{
-    map[y][x] = color;
-}
-
-void paint_mouse()
-{
-}
-
 void get_input(SDL_Event e)
 {
     while (SDL_PollEvent(&e))
     {
+        int x = e.motion.x / TILE_WIDTH;
+        int y = e.motion.y / TILE_HEIGHT;
         switch (e.type)
         {
         case SDL_MOUSEBUTTONDOWN:
-            cur_tile = map[e.motion.y / TILE_HEIGHT][e.motion.x / TILE_WIDTH];
+            cur_tile = canv.at(x, y);
             painting = true;
             break;
         case SDL_MOUSEBUTTONUP:
             painting = false;
             break;
         }
-        if (painting && e.motion.x > 0 && e.motion.y > 0)   //check if mouse isn't off window
+        if (painting && x > 0 && y > 0)   //check if mouse isn't off window
         {
             if (cur_tile == 1)
-                paint_tile(e.motion.x / TILE_WIDTH, e.motion.y / TILE_HEIGHT, 0);
+            {
+                canv.paint(x, y, 0);
+                render();
+            }
             else
-                paint_tile(e.motion.x / TILE_WIDTH, e.motion.y / TILE_HEIGHT, 1);
+            {
+                canv.paint(x, y, 1);
+                render();
+            }
         }
     }
 }
@@ -86,14 +85,14 @@ void get_input(SDL_Event e)
 void main_tick()
 {
     get_input(event);
-    paint_mouse();
-    render();
 }
 
 int main()
 {
     SDL_Init(SDL_INIT_VIDEO);
     SDL_CreateWindowAndRenderer(SCREEN_WIDTH, SCREEN_HEIGHT, 0, &window, &renderer);
+
+    render();
 
     emscripten_set_main_loop(main_tick, -1, 1);
 
