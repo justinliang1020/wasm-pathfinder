@@ -2,13 +2,15 @@
 #include <emscripten.h>
 #include <queue>    //s
 #include <unordered_set>        //s
-#include <vector>       //s
+#include <vector>       
+#include <tuple>
 #include "canvas.h"
 #include "search.h"
 
 SDL_Window *window;
 SDL_Renderer *renderer;
 SDL_Event event;
+
 
 //screen
 const int SCREEN_WIDTH = 900;  //make sure dimensions are a multiple of and proportional to map dimensions
@@ -26,6 +28,7 @@ int cur_tile = -1;
 
 //canvas
 canvas canv = canvas(MAP_WIDTH, MAP_HEIGHT);
+std::queue<std::tuple<int,int>> render_queue;
 
 // helper function for debugging in javascript console
 EM_JS(void, take_args, (int x, int y), {
@@ -83,6 +86,7 @@ void breadth_first_search(int start, int end)
     {   
         int node = q.front();
         q.pop();
+        render_queue.push(std::make_tuple(node , 4));
         if (node == end)
         {
             break;
@@ -93,7 +97,6 @@ void breadth_first_search(int start, int end)
             {
                 visited.insert(i);
                 q.push(i);
-                canv.paint(i, 4);
             }
         }
 
@@ -157,9 +160,24 @@ void get_input(SDL_Event e)
     }
 }
 
+void animation()
+{
+    if (!render_queue.empty())
+    {
+        std::tuple<int, int> frame = render_queue.front();
+        render_queue.pop();
+        int i = std::get<0>(frame);
+        int color = std::get<1>(frame);
+        canv.paint(i, color);
+        render();
+        SDL_Delay(20);
+    }
+}
+
 void main_tick()
 {
     get_input(event);
+    animation();
 }
 
 int main()
