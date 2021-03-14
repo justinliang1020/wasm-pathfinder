@@ -1,7 +1,8 @@
 #include <SDL2/SDL.h>
 #include <emscripten.h>
-#include <queue>
-#include <set>
+#include <queue>    //s
+#include <unordered_set>        //s
+#include <vector>       //s
 #include "canvas.h"
 #include "search.h"
 
@@ -31,11 +32,6 @@ EM_JS(void, take_args, (int x, int y), {
     console.log('I received: ' + [ x, y ]);
 });
 
-void breadth_first_search()
-{
-    std::queue<int> q;
-    std::set<int> discovered;
-}
 
 void render()
 {
@@ -62,6 +58,10 @@ void render()
                 SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255); // red end
                 SDL_RenderFillRect(renderer, &tileRect);
                 break;
+            case 4:
+                SDL_SetRenderDrawColor(renderer, 0, 0, 255, 255); // blue search
+                SDL_RenderFillRect(renderer, &tileRect);
+                break;
             }
             SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
             SDL_RenderDrawRect(renderer, &tileRect);
@@ -69,6 +69,35 @@ void render()
     }
 
     SDL_RenderPresent(renderer);
+}
+
+//TODO: make search and result path animations
+void breadth_first_search(int start, int end)
+{
+    std::queue<int> q;
+    std::unordered_set<int> visited;
+    q.push(start);
+    visited.insert(start);
+
+    while (!q.empty())
+    {   
+        int node = q.front();
+        q.pop();
+        if (node == end)
+        {
+            break;
+        }
+        for(int i : canv.adjacent(node))
+        {
+            if (visited.find(i) == visited.end())
+            {
+                visited.insert(i);
+                q.push(i);
+                canv.paint(i, 4);
+            }
+        }
+
+    }
 }
 
 void get_input(SDL_Event e)
@@ -94,6 +123,10 @@ void get_input(SDL_Event e)
         {
             switch (e.key.keysym.sym)
             {
+            case SDLK_1:
+                breadth_first_search(canv.start, canv.end);
+                render();
+                break;
             case SDLK_q:
                 canv.clear();
                 render();
