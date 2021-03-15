@@ -1,16 +1,20 @@
 #include <SDL2/SDL.h>
 #include <emscripten.h>
-#include <queue>    //s
-#include <unordered_set>        //s
-#include <vector>       
+#include <queue>         
+#include <vector>
 #include <tuple>
 #include "canvas.h"
 #include "search.h"
+#include "constants.h"
+
+using namespace constants;
 
 SDL_Window *window;
 SDL_Renderer *renderer;
 SDL_Event event;
 
+//color
+const int ALBEDO = 255;
 
 //screen
 const int SCREEN_WIDTH = 900;  //make sure dimensions are a multiple of and proportional to map dimensions
@@ -28,13 +32,12 @@ int cur_tile = -1;
 
 //canvas
 canvas canv = canvas(MAP_WIDTH, MAP_HEIGHT);
-std::queue<std::tuple<int,int>> render_queue;
+std::queue<std::tuple<int, int>> render_queue;
 
 // helper function for debugging in javascript console
 EM_JS(void, take_args, (int x, int y), {
     console.log('I received: ' + [ x, y ]);
 });
-
 
 void render()
 {
@@ -49,24 +52,27 @@ void render()
             int tile = canv.at(x, y);
             switch (canv.at(x, y))
             {
-            case 1:
-                SDL_SetRenderDrawColor(renderer, 128, 128, 128, 255); // grey wall
+            case WALL:
+                SDL_SetRenderDrawColor(renderer, 128, 128, 128, ALBEDO); // grey wall
                 SDL_RenderFillRect(renderer, &tileRect);
                 break;
-            case 2:
-                SDL_SetRenderDrawColor(renderer, 0, 255, 0, 255); // green start
+            case START:
+                SDL_SetRenderDrawColor(renderer, 0, 255, 0, ALBEDO); // green start
                 SDL_RenderFillRect(renderer, &tileRect);
                 break;
-            case 3:
-                SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255); // red end
+            case END:
+                SDL_SetRenderDrawColor(renderer, 255, 0, 0, ALBEDO); // red end
                 SDL_RenderFillRect(renderer, &tileRect);
                 break;
-            case 4:
-                SDL_SetRenderDrawColor(renderer, 0, 0, 255, 255); // blue search
+            case VISITED:
+                SDL_SetRenderDrawColor(renderer, 0, 0, 255, ALBEDO); // blue search
                 SDL_RenderFillRect(renderer, &tileRect);
                 break;
+            case PATH:
+                SDL_SetRenderDrawColor(renderer, 255, 165, 0, ALBEDO); // orange search
+                SDL_RenderFillRect(renderer, &tileRect);
             }
-            SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+            SDL_SetRenderDrawColor(renderer, 0, 0, 0, ALBEDO);
             SDL_RenderDrawRect(renderer, &tileRect);
         }
     }
@@ -74,34 +80,7 @@ void render()
     SDL_RenderPresent(renderer);
 }
 
-//TODO: make search and result path animations
-void breadth_first_search(int start, int end)
-{
-    std::queue<int> q;
-    std::unordered_set<int> visited;
-    q.push(start);
-    visited.insert(start);
 
-    while (!q.empty())
-    {   
-        int node = q.front();
-        q.pop();
-        render_queue.push(std::make_tuple(node , 4));
-        if (node == end)
-        {
-            break;
-        }
-        for(int i : canv.adjacent(node))
-        {
-            if (visited.find(i) == visited.end())
-            {
-                visited.insert(i);
-                q.push(i);
-            }
-        }
-
-    }
-}
 
 void get_input(SDL_Event e)
 {
@@ -115,8 +94,11 @@ void get_input(SDL_Event e)
         switch (e.type)
         {
         case SDL_MOUSEBUTTONDOWN:
-            cur_tile = canv.at(mx, my);
-            painting = true;
+            if (render_queue.empty())
+            {
+                cur_tile = canv.at(mx, my);
+                painting = true;
+            }
             break;
         case SDL_MOUSEBUTTONUP:
             painting = false;
@@ -127,33 +109,51 @@ void get_input(SDL_Event e)
             switch (e.key.keysym.sym)
             {
             case SDLK_1:
-                breadth_first_search(canv.start, canv.end);
+                if (!render_queue.empty())
+                {
+                    render_queue = {};
+                    canv.clear();   //only clear visited and path tiles
+                }
+                else
+                {
+                    breadth_first_search(canv.start, canv.end, canv, render_queue);
+                }
                 render();
                 break;
             case SDLK_q:
+                if (!render_queue.empty())
+                {
+                    render_queue = {};
+                }
                 canv.clear();
                 render();
                 break;
             case SDLK_w:
-                canv.set_start(mx, my);
-                render();
+                if (render_queue.empty())
+                {
+                    canv.set_start(mx, my);
+                    render();
+                }
                 break;
             case SDLK_e:
-                canv.set_end(mx, my);
-                render();
+                if (render_queue.empty())
+                {
+                    canv.set_end(mx, my);
+                    render();
+                }
                 break;
             }
         }
         if (painting && mx >= 0 && my >= 0) //check if mouse isn't off window
         {
-            if (cur_tile == 1)
+            if (cur_tile == WALL)
             {
-                canv.paint(mx, my, 0);
+                canv.paint(mx, my, EMPTY);
                 render();
             }
             else
             {
-                canv.paint(mx, my, 1);
+                canv.paint(mx, my, WALL);
                 render();
             }
         }
@@ -168,7 +168,8 @@ void animation()
         render_queue.pop();
         int i = std::get<0>(frame);
         int color = std::get<1>(frame);
-        canv.paint(i, color);
+        if (canv.at(i) != START && canv.at(i) != END)
+            canv.paint(i, color);
         render();
         SDL_Delay(20);
     }

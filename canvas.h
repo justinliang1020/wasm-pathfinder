@@ -1,6 +1,18 @@
 #pragma once
 #include <vector>
 #include <algorithm>
+#include "constants.h"
+
+/* Tiles:
+    0 - Empty
+    1 - Wall
+    2 - Start
+    3 - End
+    4 - Visited search tile
+    5 - Final search path
+*/
+
+using namespace constants;
 
 class canvas
 {
@@ -13,27 +25,38 @@ public:
         return x + y * width;
     }
 
+    int size()
+    {
+        return width * height;
+    }
+
+    int at(int i)
+    {
+        return map[i];
+    }
+
     int at(int x, int y)
     {
         return map[convert(x, y)];
     }
 
+    // Returns adjacent locations (not including walls)
     std::vector<int> adjacent(int i)
     {
         std::vector<int> res;
         int x = i % width;
         int y = i / width;
         //up
-        if (y - 1 >= 0)
+        if (y - 1 >= 0 && at(x, y - 1) != WALL)
             res.push_back(convert(x, y - 1));
         //down
-        if (y + 1 < height)
+        if (y + 1 < height && at(x, y + 1) != WALL)
             res.push_back(convert(x, y + 1));
         //left
-        if (x - 1 >= 0)
+        if (x - 1 >= 0 && at(x - 1, y) != WALL)
             res.push_back(convert(x - 1, y));
         //right
-        if (x + 1 < width)
+        if (x + 1 < width && at(x+1, y) != WALL)
             res.push_back(convert(x + 1, y));
         return res;
     }
