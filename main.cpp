@@ -13,22 +13,9 @@ SDL_Window *window;
 SDL_Renderer *renderer;
 SDL_Event event;
 
-//color
-const int ALBEDO = 255;
-
-//screen
-const int SCREEN_WIDTH = 900;  //make sure dimensions are a multiple of and proportional to map dimensions
-const int SCREEN_HEIGHT = 600; //TODO: make into ratios and make cleaner
-
-//world
-const int MAP_WIDTH = 30;
-const int MAP_HEIGHT = 20;
-const int TILE_WIDTH = SCREEN_WIDTH / MAP_WIDTH;
-const int TILE_HEIGHT = SCREEN_HEIGHT / MAP_HEIGHT;
-
-//paint event
-bool painting = false;
-int cur_tile = -1;
+//mouse paint event
+bool mouse_painting = false;
+int mouse_tile = -1;
 
 //canvas
 canvas canv = canvas(MAP_WIDTH, MAP_HEIGHT);
@@ -80,8 +67,6 @@ void render()
     SDL_RenderPresent(renderer);
 }
 
-
-
 void get_input(SDL_Event e)
 {
     while (SDL_PollEvent(&e))
@@ -96,12 +81,12 @@ void get_input(SDL_Event e)
         case SDL_MOUSEBUTTONDOWN:
             if (render_queue.empty())
             {
-                cur_tile = canv.at(mx, my);
-                painting = true;
+                mouse_tile = canv.at(mx, my);
+                mouse_painting = true;
             }
             break;
         case SDL_MOUSEBUTTONUP:
-            painting = false;
+            mouse_painting = false;
             break;
         }
         if (e.type == SDL_KEYDOWN)
@@ -144,9 +129,9 @@ void get_input(SDL_Event e)
                 break;
             }
         }
-        if (painting && mx >= 0 && my >= 0) //check if mouse isn't off window
+        if (mouse_painting && mx >= 0 && my >= 0) //check if mouse isn't off window
         {
-            if (cur_tile == WALL)
+            if (mouse_tile == WALL)
             {
                 canv.paint(mx, my, EMPTY);
                 render();

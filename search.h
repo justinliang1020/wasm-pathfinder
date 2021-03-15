@@ -6,11 +6,16 @@
 #include "canvas.h"
 #include "constants.h"
 
-void breadth_first_search(const int& start, const int& end, canvas& canv, std::queue<std::tuple<int,int>>& render_queue)
+using std::tuple;
+using std::queue;
+using std::vector;
+using std::unordered_set;
+
+void breadth_first_search(const int& start, const int& end, canvas& canv, queue<tuple<int,int>>& render_queue)
 {
-    std::queue<int> q;
-    std::unordered_set<int> visited;
-    std::vector<int> prev(canv.size());
+    queue<int> q;
+    unordered_set<int> visited;
+    vector<int> prev(canv.size());
     std::fill(prev.begin(), prev.end(), -1);
 
     q.push(start);
@@ -37,7 +42,7 @@ void breadth_first_search(const int& start, const int& end, canvas& canv, std::q
     }
 
     //reconstruct path
-    std::vector<int> p;
+    vector<int> p;
     for (int i = end; i != -1; i = prev[i])
         p.push_back(i);
     
