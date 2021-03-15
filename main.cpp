@@ -105,6 +105,18 @@ void get_input(SDL_Event e)
                 }
                 render();
                 break;
+            case SDLK_2:
+                if (!render_queue.empty())
+                {
+                    render_queue = {};
+                    canv.clear();   //only clear visited and path tiles
+                }
+                else
+                {
+                    depth_first_search(canv.start, canv.end, canv, render_queue);
+                }
+                render();
+                break;
             case SDLK_q:
                 if (!render_queue.empty())
                 {
