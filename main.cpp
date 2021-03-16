@@ -117,6 +117,30 @@ void get_input(SDL_Event e)
                 }
                 render();
                 break;
+            case SDLK_3:
+                if (!render_queue.empty())
+                {
+                    render_queue = {};
+                    canv.clear();   //only clear visited and path tiles
+                }
+                else
+                {
+                    dijkstra(canv.start, canv.end, canv, render_queue);
+                }
+                render();
+                break;
+            case SDLK_4:
+                if (!render_queue.empty())
+                {
+                    render_queue = {};
+                    canv.clear();   //only clear visited and path tiles
+                }
+                else
+                {
+                    a_star(canv.start, canv.end, canv, render_queue);
+                }
+                render();
+                break;
             case SDLK_q:
                 if (!render_queue.empty())
                 {
@@ -186,7 +210,6 @@ int main()
     canv.set_default_points();
 
     render();
-
     emscripten_set_main_loop(main_tick, -1, 1);
 
     SDL_DestroyRenderer(renderer);

@@ -23,4 +23,6 @@ namespace constants
     const int TILE_WIDTH = SCREEN_WIDTH / MAP_WIDTH;
     const int TILE_HEIGHT = SCREEN_HEIGHT / MAP_HEIGHT;
 
+    //math
+    const int MY_INFINITY = 10000000;
 }

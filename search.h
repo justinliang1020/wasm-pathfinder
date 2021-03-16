@@ -4,9 +4,13 @@
 #include <unordered_set> //s
 #include <vector>
 #include <tuple>
+#include <functional>
 #include "canvas.h"
 #include "constants.h"
 
+using std::greater;
+using std::make_tuple;
+using std::priority_queue;
 using std::queue;
 using std::stack;
 using std::tuple;
@@ -27,7 +31,7 @@ void breadth_first_search(const int &start, const int &end, canvas &canv, queue<
     {
         int tile = q.front();
         q.pop();
-        render_queue.push(std::make_tuple(tile, VISITED));
+        render_queue.push(make_tuple(tile, VISITED));
         if (tile == end)
         {
             break;
@@ -50,14 +54,14 @@ void breadth_first_search(const int &start, const int &end, canvas &canv, queue<
 
     //add path to render_queue in reverse
     for (auto i = p.rbegin(); i != p.rend(); ++i)
-        render_queue.push(std::make_tuple(*i, PATH));
+        render_queue.push(make_tuple(*i, PATH));
 }
 
 void depth_first_search(const int &start, const int &end, canvas &canv, queue<tuple<int, int>> &render_queue)
 {
     stack<tuple<int, vector<int>>> s;
     vector<int> v;
-    s.push(std::make_tuple(start, v));
+    s.push(make_tuple(start, v));
     unordered_set<int> visited;
 
     while (!s.empty())
@@ -66,9 +70,9 @@ void depth_first_search(const int &start, const int &end, canvas &canv, queue<tu
         s.pop();
         int tile = std::get<0>(top);
         vector<int> cur_path = std::get<1>(top);
-        render_queue.push(std::make_tuple(tile, VISITED));
         if (visited.find(tile) == visited.end())
         {
+            render_queue.push(make_tuple(tile, VISITED));
             if (tile == end)
             {
                 v = cur_path;
@@ -79,12 +83,120 @@ void depth_first_search(const int &start, const int &end, canvas &canv, queue<tu
             {
                 vector<int> new_path = cur_path;
                 new_path.push_back(i);
-                s.push(std::make_tuple(i, new_path));
+                s.push(make_tuple(i, new_path));
             }
         }
     }
 
     //add path to render_queue
     for (auto i = v.begin(); i != v.end(); ++i)
-        render_queue.push(std::make_tuple(*i, PATH));
+        render_queue.push(make_tuple(*i, PATH));
+}
+
+void dijkstra(const int &start, const int &end, canvas &canv, queue<tuple<int, int>> &render_queue)
+{
+    vector<int> dist;
+    priority_queue<tuple<int, int>, vector<tuple<int, int>>, greater<tuple<int, int>>> pq;
+    unordered_set<int> visited;
+    vector<int> prev(canv.size());
+    int end_dist = MY_INFINITY;
+
+    std::fill(prev.begin(), prev.end(), -1);
+
+    for (int i = 0; i < canv.size(); ++i)
+    {
+        dist.push_back(MY_INFINITY);
+    }
+
+    pq.push(make_tuple(0, start));
+    dist[start] = 0;
+
+    while (!pq.empty())
+    {
+        int cur_dist = std::get<0>(pq.top());
+        int tile = std::get<1>(pq.top());
+        if (cur_dist > end_dist)
+            break;
+        if (tile == end)
+        {
+            end_dist = cur_dist;
+            break;
+        }
+        pq.pop();
+        for (int i : canv.adjacent(tile))
+        {
+            if (visited.find(i) == visited.end() && dist[i] > dist[tile] + 1)
+            {
+                dist[i] = dist[tile] + 1;
+                pq.push(make_tuple(dist[i], i));
+                prev[i] = tile;
+            }
+        }
+        render_queue.push(make_tuple(tile, VISITED));
+        visited.insert(tile);
+    }
+
+    //reconstruct path
+    vector<int> p;
+    for (int i = end; i != -1; i = prev[i])
+        p.push_back(i);
+
+    //add path to render_queue in reverse
+    for (auto i = p.rbegin(); i != p.rend(); ++i)
+        render_queue.push(make_tuple(*i, PATH));
+}
+
+// distance heuristic is distance + dist_squared
+void a_star(const int &start, const int &end, canvas &canv, queue<tuple<int, int>> &render_queue)
+{
+    vector<int> dist;
+    priority_queue<tuple<int, int>, vector<tuple<int, int>>, greater<tuple<int, int>>> pq;
+    unordered_set<int> visited;
+    vector<int> prev(canv.size());
+    int end_dist = MY_INFINITY;
+
+    std::fill(prev.begin(), prev.end(), -1);
+
+    for (int i = 0; i < canv.size(); ++i)
+    {
+        dist.push_back(MY_INFINITY);
+    }
+
+    pq.push(make_tuple(canv.dist_squared(start, end), start));
+    dist[start] = 0;
+
+    while (!pq.empty())
+    {
+        int cur_dist = std::get<0>(pq.top());
+        int tile = std::get<1>(pq.top());
+        if (cur_dist > end_dist)
+            break;
+        if (tile == end)
+        {
+            end_dist = cur_dist;
+            break;
+        }
+        pq.pop();
+        for (int i : canv.adjacent(tile))
+        {
+            int weight = canv.dist_squared(i, end) + 1;
+            if (visited.find(i) == visited.end() && dist[i] > weight)
+            {
+                dist[i] = weight;
+                pq.push(make_tuple(weight, i));
+                prev[i] = tile;
+            }
+        }
+        render_queue.push(make_tuple(tile, VISITED));
+        visited.insert(tile);
+    }
+
+    //reconstruct path
+    vector<int> p;
+    for (int i = end; i != -1; i = prev[i])
+        p.push_back(i);
+
+    //add path to render_queue in reverse
+    for (auto i = p.rbegin(); i != p.rend(); ++i)
+        render_queue.push(make_tuple(*i, PATH));
 }

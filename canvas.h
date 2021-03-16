@@ -1,6 +1,7 @@
 #pragma once
 #include <vector>
 #include <algorithm>
+#include <cmath>
 #include "constants.h"
 
 /* Tiles:
@@ -25,6 +26,16 @@ public:
         return x + y * width;
     }
 
+    int convert_x(int i)
+    {
+        return i % width;
+    }
+
+    int convert_y(int i)
+    {
+        return i / width;
+    }
+
     int size()
     {
         return width * height;
@@ -44,8 +55,8 @@ public:
     std::vector<int> adjacent(int i)
     {
         std::vector<int> res;
-        int x = i % width;
-        int y = i / width;
+        int x = convert_x(i);
+        int y = convert_y(i);
         //up
         if (y - 1 >= 0 && at(x, y - 1) != WALL)
             res.push_back(convert(x, y - 1));
@@ -97,6 +108,17 @@ public:
         map[end] = 0;
         end = x + y * width;
         paint(x, y, 3);
+    }
+
+    // calculates the distances squared between points a and b
+    int dist_squared(int a, int b)
+    {
+        int x1 = convert_x(a);
+        int y1 = convert_y(a);
+        int x2 = convert_x(b);
+        int y2 = convert_y(b);
+
+        return std::abs(y2 - y1) + std::abs(x2 - x1);
     }
 
 public:
