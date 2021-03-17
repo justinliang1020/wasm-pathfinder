@@ -15,7 +15,9 @@ SDL_Event event;
 
 //mouse paint event
 bool mouse_painting = false;
+bool mouse_dragging = false;
 int mouse_tile = -1;
+int mouse_loc_prev = -1;
 
 //canvas
 canvas canv = canvas(MAP_WIDTH, MAP_HEIGHT);
@@ -83,7 +85,6 @@ bool check_animating()
         render();
         return false;
     }
-    
 }
 
 void get_input(SDL_Event e)
@@ -101,11 +102,20 @@ void get_input(SDL_Event e)
             if (render_queue.empty())
             {
                 mouse_tile = canv.at(mx, my);
-                mouse_painting = true;
+                if (mouse_tile == 2 || mouse_tile == 3)
+                    mouse_dragging = true;
+                else
+                    mouse_painting = true;
             }
             break;
         case SDL_MOUSEBUTTONUP:
-            mouse_painting = false;
+            if (mouse_dragging)
+            {
+                mouse_dragging = false;
+                mouse_loc_prev = -1;
+            }
+            else
+                mouse_painting = false;
             break;
         }
         if (e.type == SDL_KEYDOWN)
@@ -152,7 +162,8 @@ void get_input(SDL_Event e)
                 break;
             }
         }
-        if (mouse_painting && mx >= 0 && my >= 0) //check if mouse isn't off window
+        //check if mouse isn't off window and if it isn't on a start/end tile
+        if (mouse_painting && mx >= 0 && my >= 0 && canv.at(mx, my) != 2 && canv.at(mx, my) != 3)
         {
             if (mouse_tile == WALL)
             {
@@ -162,6 +173,27 @@ void get_input(SDL_Event e)
             else
             {
                 canv.paint(mx, my, WALL);
+                render();
+            }
+        }
+        
+        if (mouse_dragging && mx >= 0 && my >= 0)
+        {
+            // start cant drag to end and vice versa
+            if (!((mouse_tile == START && canv.at(mx, my) == END) || (mouse_tile == END && canv.at(mx, my) == START)))
+            {
+                if (mouse_loc_prev != -1)
+                    canv.paint(mouse_loc_prev, EMPTY);
+                if (mouse_tile == START)
+                {
+                    canv.set_start(mx, my);
+                }
+                else
+                {
+                    canv.set_end(mx, my);
+                }
+
+                mouse_loc_prev = canv.convert(mx, my);
                 render();
             }
         }
