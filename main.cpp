@@ -1,6 +1,6 @@
 #include <SDL2/SDL.h>
 #include <emscripten.h>
-#include <queue>         
+#include <queue>
 #include <vector>
 #include <tuple>
 #include "canvas.h"
@@ -67,6 +67,25 @@ void render()
     SDL_RenderPresent(renderer);
 }
 
+// interrupt a search animation if one is going on
+bool check_animating()
+{
+    if (!render_queue.empty())
+    {
+        render_queue = {};
+        canv.clear_search();
+        render();
+        return true;
+    }
+    else
+    {
+        canv.clear_search();
+        render();
+        return false;
+    }
+    
+}
+
 void get_input(SDL_Event e)
 {
     while (SDL_PollEvent(&e))
@@ -94,52 +113,20 @@ void get_input(SDL_Event e)
             switch (e.key.keysym.sym)
             {
             case SDLK_1:
-                if (!render_queue.empty())
-                {
-                    render_queue = {};
-                    canv.clear();   //only clear visited and path tiles
-                }
-                else
-                {
-                    breadth_first_search(canv.start, canv.end, canv, render_queue);
-                }
-                render();
+                if (!check_animating())
+                    breadth_first_search(canv, render_queue);
                 break;
             case SDLK_2:
-                if (!render_queue.empty())
-                {
-                    render_queue = {};
-                    canv.clear();   //only clear visited and path tiles
-                }
-                else
-                {
-                    depth_first_search(canv.start, canv.end, canv, render_queue);
-                }
-                render();
+                if (!check_animating())
+                    depth_first_search(canv, render_queue);
                 break;
             case SDLK_3:
-                if (!render_queue.empty())
-                {
-                    render_queue = {};
-                    canv.clear();   //only clear visited and path tiles
-                }
-                else
-                {
-                    dijkstra(canv.start, canv.end, canv, render_queue);
-                }
-                render();
+                if (!check_animating())
+                    dijkstra(canv, render_queue);
                 break;
             case SDLK_4:
-                if (!render_queue.empty())
-                {
-                    render_queue = {};
-                    canv.clear();   //only clear visited and path tiles
-                }
-                else
-                {
-                    a_star(canv.start, canv.end, canv, render_queue);
-                }
-                render();
+                if (!check_animating())
+                    a_star(canv, render_queue);
                 break;
             case SDLK_q:
                 if (!render_queue.empty())

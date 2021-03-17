@@ -85,7 +85,19 @@ public:
     void clear()
     {
         std::fill(map.begin(), map.end(), 0);
-        set_default_points();
+        map[start] = START;
+        map[end] = END;
+    }
+
+    void clear_search()
+    {
+        for (int i = 0; i < map.size(); ++i)
+        {
+            if (map[i] == VISITED || map[i] == PATH)
+            {
+                map[i] = 0;
+            }
+        }
     }
 
     void set_default_points()

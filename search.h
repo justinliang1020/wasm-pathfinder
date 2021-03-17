@@ -17,8 +17,10 @@ using std::tuple;
 using std::unordered_set;
 using std::vector;
 
-void breadth_first_search(const int &start, const int &end, canvas &canv, queue<tuple<int, int>> &render_queue)
+void breadth_first_search(canvas &canv, queue<tuple<int, int>> &render_queue)
 {
+    const int start = canv.start;
+    const int end = canv.end;
     queue<int> q;
     unordered_set<int> visited;
     vector<int> prev(canv.size());
@@ -57,8 +59,11 @@ void breadth_first_search(const int &start, const int &end, canvas &canv, queue<
         render_queue.push(make_tuple(*i, PATH));
 }
 
-void depth_first_search(const int &start, const int &end, canvas &canv, queue<tuple<int, int>> &render_queue)
+void depth_first_search(canvas &canv, queue<tuple<int, int>> &render_queue)
 {
+    const int start = canv.start;
+    const int end = canv.end;
+
     stack<tuple<int, vector<int>>> s;
     vector<int> v;
     s.push(make_tuple(start, v));
@@ -93,8 +98,11 @@ void depth_first_search(const int &start, const int &end, canvas &canv, queue<tu
         render_queue.push(make_tuple(*i, PATH));
 }
 
-void dijkstra(const int &start, const int &end, canvas &canv, queue<tuple<int, int>> &render_queue)
+void dijkstra(canvas &canv, queue<tuple<int, int>> &render_queue)
 {
+    const int start = canv.start;
+    const int end = canv.end;
+
     vector<int> dist;
     priority_queue<tuple<int, int>, vector<tuple<int, int>>, greater<tuple<int, int>>> pq;
     unordered_set<int> visited;
@@ -147,8 +155,11 @@ void dijkstra(const int &start, const int &end, canvas &canv, queue<tuple<int, i
 }
 
 // distance heuristic is distance + dist_squared
-void a_star(const int &start, const int &end, canvas &canv, queue<tuple<int, int>> &render_queue)
+void a_star(canvas &canv, queue<tuple<int, int>> &render_queue)
 {
+    const int start = canv.start;
+    const int end = canv.end;
+
     vector<int> dist;
     priority_queue<tuple<int, int>, vector<tuple<int, int>>, greater<tuple<int, int>>> pq;
     unordered_set<int> visited;
