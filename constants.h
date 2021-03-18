@@ -14,12 +14,12 @@ namespace constants
     const int ALBEDO = 255;
 
     //screen
-    const int SCREEN_WIDTH = 900;  //make sure dimensions are a multiple of and proportional to map dimensions
-    const int SCREEN_HEIGHT = 600; //TODO: make into ratios and make cleaner
+    const int SCREEN_WIDTH = 750;  //make sure dimensions are a multiple of and proportional to map dimensions
+    const int SCREEN_HEIGHT = 450; //TODO: make into ratios and make cleaner
 
     //world
-    const int MAP_WIDTH = 30;
-    const int MAP_HEIGHT = 20;
+    const int MAP_WIDTH = 25;
+    const int MAP_HEIGHT = 15;
     const int TILE_WIDTH = SCREEN_WIDTH / MAP_WIDTH;
     const int TILE_HEIGHT = SCREEN_HEIGHT / MAP_HEIGHT;
 

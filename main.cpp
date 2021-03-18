@@ -6,6 +6,7 @@
 #include "canvas.h"
 #include "search.h"
 #include "constants.h"
+#include "maze.h"
 
 using namespace constants;
 
@@ -19,7 +20,7 @@ bool mouse_dragging = false;
 int mouse_tile = -1;
 int mouse_loc_prev = -1;
 
-//canvas
+//canvas rendering
 canvas canv = canvas(MAP_WIDTH, MAP_HEIGHT);
 std::queue<std::tuple<int, int>> render_queue;
 
@@ -84,6 +85,31 @@ bool check_animating()
         canv.clear_search();
         render();
         return false;
+    }
+}
+
+void checkDOM()
+{
+    int search_choice = EM_ASM_INT(
+        return getSearch(););
+    switch (search_choice)
+    {
+    case 0:
+        if (!check_animating())
+            breadth_first_search(canv, render_queue);
+        break;
+    case 1:
+        if (!check_animating())
+            depth_first_search(canv, render_queue);
+        break;
+    case 2:
+        if (!check_animating())
+            dijkstra(canv, render_queue);
+        break;
+    case 3:
+        if (!check_animating())
+            a_star(canv, render_queue);
+        break;
     }
 }
 
@@ -160,6 +186,13 @@ void get_input(SDL_Event e)
                     render();
                 }
                 break;
+            case SDLK_SPACE:
+                checkDOM();
+                break;
+                // case SDLK_r:
+                //     if (!check_animating())
+                //         recursive_division(canv, render_queue);
+                //     break;
             }
         }
         //check if mouse isn't off window and if it isn't on a start/end tile
@@ -176,7 +209,7 @@ void get_input(SDL_Event e)
                 render();
             }
         }
-        
+
         if (mouse_dragging && mx >= 0 && my >= 0)
         {
             // start cant drag to end and vice versa
@@ -204,6 +237,9 @@ void animation()
 {
     if (!render_queue.empty())
     {
+        int speed_choice = EM_ASM_INT(
+            return getSpeed(););
+        int animation_speed = 105 - speed_choice;
         std::tuple<int, int> frame = render_queue.front();
         render_queue.pop();
         int i = std::get<0>(frame);
@@ -211,7 +247,7 @@ void animation()
         if (canv.at(i) != START && canv.at(i) != END)
             canv.paint(i, color);
         render();
-        SDL_Delay(20);
+        SDL_Delay(animation_speed);
     }
 }
 
