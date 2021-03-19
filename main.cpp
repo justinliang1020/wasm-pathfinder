@@ -14,6 +14,13 @@ SDL_Window *window;
 SDL_Renderer *renderer;
 SDL_Event event;
 
+//screen
+int SCREEN_WIDTH = 750;
+int SCREEN_HEIGHT = 450;
+
+int MAP_WIDTH = SCREEN_WIDTH / TILE_WIDTH;
+int MAP_HEIGHT = SCREEN_HEIGHT / TILE_HEIGHT;
+
 //mouse paint event
 bool mouse_painting = false;
 bool mouse_dragging = false;
@@ -27,6 +34,13 @@ std::queue<std::tuple<int, int>> render_queue;
 // helper function for debugging in javascript console
 EM_JS(void, take_args, (int x, int y), {
     console.log('I received: ' + [ x, y ]);
+});
+EM_JS(int, canvas_get_width, (), {
+    return window.innerWidth;
+});
+
+EM_JS(int, canvas_get_height, (), {
+    return window.innerHeight;
 });
 
 void render()
@@ -66,7 +80,6 @@ void render()
             SDL_RenderDrawRect(renderer, &tileRect);
         }
     }
-
     SDL_RenderPresent(renderer);
 }
 
@@ -239,7 +252,7 @@ void animation()
     {
         int speed_choice = EM_ASM_INT(
             return getSpeed(););
-        int animation_speed = 105 - speed_choice;
+        int animation_speed = 101 - speed_choice;
         std::tuple<int, int> frame = render_queue.front();
         render_queue.pop();
         int i = std::get<0>(frame);
@@ -259,6 +272,18 @@ void main_tick()
 
 int main()
 {
+    // gets width/height of browser window and scales SDL window accordingly
+    int width = canvas_get_width();
+    int height = canvas_get_height();
+    take_args(width, height);
+    SCREEN_WIDTH = (width - HORIZONTAL_MARGIN);
+    SCREEN_WIDTH -= SCREEN_WIDTH % TILE_WIDTH;
+    SCREEN_HEIGHT = (height - VERTICAL_MARGIN);
+    SCREEN_HEIGHT -= SCREEN_HEIGHT % TILE_HEIGHT;
+    MAP_WIDTH = SCREEN_WIDTH / TILE_WIDTH;
+    MAP_HEIGHT = SCREEN_HEIGHT / TILE_HEIGHT;
+    canv = canvas(MAP_WIDTH, MAP_HEIGHT);
+
     SDL_Init(SDL_INIT_VIDEO);
     SDL_CreateWindowAndRenderer(SCREEN_WIDTH, SCREEN_HEIGHT, 0, &window, &renderer);
 

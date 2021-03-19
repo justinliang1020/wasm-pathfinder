@@ -9,7 +9,7 @@
     <script src="controller.js"></script>
 </head>
 
-<body style="background-color:#2f4f4f">
+<body>
     <!-- <hr/> -->
     <figure style="overflow:visible;" id="spinner">
         <div class="spinner"></div>
@@ -33,21 +33,20 @@
     <hr/>
     <textarea class="emscripten" id="output" rows="8"></textarea>
     <hr> -->
-    <p>Instructions: Select a search algorithm. Press "space" to start.</p>
-    <p>Click to build/destroy walls. Click and drag to move start/end tiles. Q - clear board</p>
-    <input type="radio" id="bfs" name="search" value="0" checked>
-    <label for="0">Breadth First Search</label><br>
-    <input type="radio" id="dfs" name="search" value="1">
-    <label for="1">Depth First Search</label><br>
-    <input type="radio" id="dijkstra" name="search" value="2">
-    <label for="2">Dijkstra's Algorithm</label><br>
-    <input type="radio" id="astar" name="search" value="3">
-    <label for="3">A* Search</label><br>
-
-    <div class="slidecontainer">
-        <p>Animation Speed:</p><br>
-        <input type="range" min="1" max="100" value="50" class="slider" id="speed">
+    <div class = "center">
+        <h1>Press Spacebar to visualize!</h1>
+        <input type="radio" id="bfs" name="search" value="0" checked>
+        <label for="0">Breadth First Search</label>
+        <input type="radio" id="dfs" name="search" value="1">
+        <label for="1">Depth First Search</label>
+        <input type="radio" id="dijkstra" name="search" value="2">
+        <label for="2">Dijkstra's Algorithm</label>
+        <input type="radio" id="astar" name="search" value="3">
+        <label for="3">A* Search</label><br><br>
+        <label for="speed">Speed: </label>
+        <input type="range" min="1" max="100" value="50" class="slider" id="speed" name="speed">
     </div>
+
 
     <script type='text/javascript'>
         var statusElement = document.getElementById('status');
