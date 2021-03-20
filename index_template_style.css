@@ -10,6 +10,16 @@ label {
     color: #D9A036;
 }
 
+
+p {
+    color: 	#8C6723;
+    margin: 5px 0px;
+}
+
+a {
+    color: #8C6723;
+}
+
 .center {
     text-align: center;
 }
