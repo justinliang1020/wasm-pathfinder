@@ -10,10 +10,10 @@ Algorithms:
 1. Breadth-First Search
 2. Depth-First Search
 3. Dijkstra's Algorithm 
-a. Gives pretty much the same visualization as BFS since it uses an unweighted graph
+  - Gives pretty much the same visualization as BFS since it uses an unweighted graph
 4. A* (-like) Search
-a. Uses absolute distance^2 (disregarding walls) as the guiding heuristic function
-b. This heuristic is not consistent in giving an estimation smaller than the actual shortest path, meaning that this is only a "pseudo-A* search" algorithm and won't always draw the optimal path
+  - Uses manhattan distance^2 as the guiding heuristic function
+  - This heuristic is not consistent in giving an estimation smaller than the actual shortest path, meaning that this is only a "pseudo-A* search" algorithm and won't always draw the optimal path.
 
 Building and Running
 ---------------------
